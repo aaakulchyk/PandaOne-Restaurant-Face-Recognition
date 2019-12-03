@@ -1,0 +1,30 @@
+{% extends 'face_detection/base.html' %}
+
+{% block title %}{{ customer }}{% endblock %}
+
+{% block main %}
+<div class="row">
+  <div id="customerInfo-photo" class="col-3">
+    <!-- TODO: implement display of photo in general -->
+    <img src="foto.jpg" width="190" height="260">
+    {% block customer_photo %}{% endblock %}
+  </div>
+
+  <div id="customerInfo-bio" class="col-9">
+    {% block customer_bio %}{% endblock %}
+    <h5 class="pb-3">Customer Info</h5>
+    <p><strong>Name:</strong> {% if customer.name %}{{ customer.name }}{% else %}unknown{% endif %}</p>
+    <p><strong>Sex:</strong> {% if customer.sex %}{{ customer.sex }}{% else %}unknown{% endif %}</p>
+    <p><strong>Age:</strong> {% if customer.age %}{{ customer.age }}{% else %}unknown{% endif %}</p>
+    <p><strong>First visit:</strong> {{ customer.first_visit }}</p>
+    <p><strong>Spent totally:</strong> {{ customer.spent }}</p>
+  </div>
+</div>
+<div class="row">
+  <div id="personInfo-prefs" class="col-12 mx-2 my-5">
+    {% block prefs %}{% endblock %}
+    <p><strong>Preferences</strong></p>
+    <p>{% if customer.prefs %}{{ customer.prefs }}{% else %}No preferences.{% endif %}</p>
+  </div>
+</div>
+{% endblock %} <!-- block main -->
