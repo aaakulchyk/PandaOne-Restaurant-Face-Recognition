@@ -30,6 +30,7 @@
         <th scope="col">Name</th>
         <th scope="col">Sex</th>
         <th scope="col">First visit</th>
+        <th scope="col">Last visit</th>
         <th scope="col">Spent</th>
       </tr>
     </thead>
@@ -58,7 +59,7 @@
           // console.log("Entries: " + Object.entries(customer));
           for (const [k, v] of Object.entries(customer)) {
               // console.log(k + " " + v);
-              if (k === 'first_visit') {
+              if (k === 'first_visit' || k === 'last_visit') {
                   let d = new Date(v);
                   let dFormatted = `${d.getDay()}.${d.getMonth()}.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
                   newRow.insertCell(-1).appendChild(document.createTextNode(dFormatted));
@@ -67,6 +68,21 @@
               }
           }
           _cacheCustomerData(customer);
+      } else {
+          let d = new Date(customer["last_visit"]);
+          let dFormatted = `${d.getDay()}.${d.getMonth()}.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
+          for (const row of resultsBody.querySelectorAll('tr')) {
+              try {
+                  console.log(row.childNodes[4].textContent);
+                  let cur_id = row.firstChild.textContent;
+                  console.log("Customer ID: " + customer["id"] + " cur_id: " + cur_id);
+                  if (customer["id"] === parseInt(cur_id)) {
+                      row.childNodes[4].textContent = dFormatted;
+                  }
+              } catch (e) {
+                  console.log(e);
+              }
+          }
       }
   }
 
@@ -141,7 +157,7 @@
           // Bind recording continuation
           document.querySelector('button#btnRecord-continue').onclick = mount;
 
-          let sendCaptures = setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8000/detect/');
+          let sendCaptures = setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8001/detect/');
           const sleep = m => new Promise(r => setTimeout(r, m));
           video.srcObject = stream;
           await sleep(3000);
