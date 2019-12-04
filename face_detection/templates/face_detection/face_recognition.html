@@ -48,8 +48,13 @@
   const resultsBody = document.querySelector('#recognitionResults-body');
   let __customerCache = new Set();
 
+  function _prependZero(n) {
+      return Math.abs(n) < 10 ? "0" + n : n;
+  }
+
   function _formatDate(d) {
-      return `${d.getDay()}.${d.getMonth()}.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
+      return `${_prependZero(d.getDay())}.${_prependZero(d.getMonth())}.${d.getFullYear()},\
+              ${_prependZero(d.getHours())}:${_prependZero(d.getMinutes())}`;
   }
 
   function _cacheCustomerData(customer) {
@@ -161,7 +166,7 @@
           let sendCaptures = setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8001/detect/');
           const sleep = m => new Promise(r => setTimeout(r, m));
           video.srcObject = stream;
-          await sleep(3000);
+          await sleep(1000);
       });
   }
 
