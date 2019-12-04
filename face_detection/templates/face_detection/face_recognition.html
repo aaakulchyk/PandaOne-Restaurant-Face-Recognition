@@ -80,7 +80,7 @@
                   console.log(this.response);
 
                   let resp = JSON.parse(this.response);
-                  console.log("Success: " + resp["success"]);
+                  // console.log("Success: " + resp["success"]);
 
                   if (resp["has_new"]) {
                       resp["customers"].forEach(customer => {
@@ -104,23 +104,12 @@
       })
   }
 
-  /*function takePhoto(video) {
-      let canvas = document.querySelector('canvas');
-      canvas.width = video.videoWidth || video.clientWidth;
-      canvas.height = video.videoHeight || video.clientHeight;
-
-      let context = canvas.getContext('2d');
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      return canvas.toDataURL('image/png');
-  }*/
-
   function sendLatestCapture(stream, url) {
       let videoTracks = stream.getVideoTracks();
       let imageCapture = new ImageCapture(videoTracks[videoTracks.length-1]);
 
       imageCapture.takePhoto().then(function(blob) {
-          console.log(blob);
+          // console.log(blob);
           let fd = new FormData();
           fd.append("image", blob);
           httpPost(url, fd);
@@ -143,9 +132,10 @@
           document.querySelector('button#btnRecord-stop').onclick = (e) => {
               clearInterval(sendCaptures);
               video.pause();
+              video.src = '';
               stream.getTracks().forEach(track => track.stop());
               recorder.stopRecording();
-              console.log("Stop video recording");
+              // console.log("Stop video recording");
           };
 
           // Bind recording continuation
