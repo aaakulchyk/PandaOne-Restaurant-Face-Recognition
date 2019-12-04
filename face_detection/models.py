@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from django.db import models
 
@@ -34,6 +35,14 @@ class Customer(BaseCustomer):
         except OSError as e:
             print(e)
         return new_customer
+
+    def delete(self, using=None, keep_parents=False):
+        dir = os.path.join('face_detection', 'dataset', str(self.pk))
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+
+        # Ensure to return whatever overriden delete should return
+        return super().delete(using=using, keep_parents=keep_parents)
 
     # Magic methods
 
