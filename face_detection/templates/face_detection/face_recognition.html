@@ -76,7 +76,13 @@
                   let resp = JSON.parse(this.response);
                   console.log("Success: " + resp["success"]);
 
-                  resp["customers"].forEach(customer => _insertCustomerData(customer));
+                  if (resp["has_new"]) {
+                      resp["customers"].forEach(customer => {
+                          customer["name"] === "<Unknown>" ? console.log("please stand by") : _insertCustomerData(customer);
+                      })
+                  } else {
+                      resp["customers"].forEach(customer => _insertCustomerData(customer));
+                  }
 
                   resolve(this.response);
               } else {

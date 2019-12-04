@@ -142,12 +142,15 @@ def detect_async(request, *args, **kwargs):
 
         detections, names = _recognize(image, **RECOGNITION_PARAMS)
         # print(f"Detections: {detections}")
-        customers = _query_recognized_customers(names)
+        customers, has_new = _query_recognized_customers(names, add_new=True)
 
         # Cache customers that were recognized at the picture
         _cache_recognition_results(names)
 
-        data.update({"success": True, "num_faces": detections.shape[0], "customers": customers})
+        data.update({"success": True,
+                     "num_faces": detections.shape[0],
+                     "customers": customers,
+                     "has_new": has_new})
         # print(f"DATA: {data}")
 
     # return a JSON response
@@ -273,8 +276,12 @@ def _recognize(image, **kwargs):
     return detections[0, 0, detections[0, 0, :, 2] > kwargs['confidence']], names
 
 
-def _query_recognized_customers(names, fields='all'):
-    return [_query_recognized_customer(name) for name in names]
+def _query_recognized_customers(names, add_new=True, fields='all'):
+    # Registry of new customers required?
+    if add_new:
+        return _query_register_customers(names, fields=fields)
+    else:
+        return [_query_recognized_customer(name) for name in names], False
 
 
 def _query_recognized_customer(name, fields='all'):
@@ -290,3 +297,22 @@ def _query_recognized_customer(name, fields='all'):
             'first_visit': customer.first_visit,
             'spent': customer.spent,
         }
+
+
+def _query_register_customers(names, fields='all'):
+    result = list()
+    has_new = False
+    for name in names:
+        # Unrecognized customer is marked with '0' label
+        if name == '0':
+            has_new = True
+            new_customer = _models.Customer.create()
+            result.append({'id': new_customer.pk,
+                           'name': new_customer.name,
+                           'sex': new_customer.sex,
+                           'first_visit': new_customer.first_visit,
+                           'spent': new_customer.spent,
+                           })
+        else:
+            result.append(_query_recognized_customer(name))
+    return result, has_new
