@@ -118,8 +118,9 @@
 
           // Bind recording interruption
           document.querySelector('button#btnRecord-stop').onclick = (e) => {
+              clearInterval(sendCaptures);
               video.pause();
-              stream.getTracks()[0].stop();
+              stream.getTracks().forEach(track => track.stop());
               recorder.stopRecording();
               console.log("Stop video recording");
           };
@@ -127,7 +128,7 @@
           // Bind recording continuation
           document.querySelector('button#btnRecord-continue').onclick = mount;
 
-          setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8000/detect/');
+          let sendCaptures = setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8000/detect/');
           const sleep = m => new Promise(r => setTimeout(r, m));
           video.srcObject = stream;
           await sleep(3000);

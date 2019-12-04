@@ -19,6 +19,14 @@ from . import models as _models
 FACE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_frontalface_default.xml".format(
     base_path=os.path.abspath(os.path.dirname(__file__)))
 
+RECOGNITION_PARAMS = {
+        "recognizer": "face_detection/output/recognizer.pickle",
+        "detector": "face_detection/face_detection_model",
+        "embedding_model": "face_detection/openface_nn4.small2.v1.t7",
+        "le": "face_detection/output/recognizer.pickle",
+        "confidence": 0.8
+    }
+
 RECOGNITION_CACHE = set()
 
 
@@ -132,15 +140,7 @@ def detect_async(request, *args, **kwargs):
             # load the image and convert
             image = _grab_image(url=url)
 
-        kwargs = {
-            "recognizer": "face_detection/output/recognizer.pickle",
-            "detector": "face_detection/face_detection_model",
-            "embedding_model": "face_detection/openface_nn4.small2.v1.t7",
-            "le": "face_detection/output/recognizer.pickle",
-            "confidence": 0.5
-        }
-
-        detections, names = _recognize(image, **kwargs)
+        detections, names = _recognize(image, **RECOGNITION_PARAMS)
         # print(f"Detections: {detections}")
         customers = _query_recognized_customers(names)
 
@@ -290,5 +290,3 @@ def _query_recognized_customer(name, fields='all'):
             'first_visit': customer.first_visit,
             'spent': customer.spent,
         }
-    # elif isinstance(fields, Iterable):
-    #     return {k: v for k, v in zip(fields, customer[k])}
