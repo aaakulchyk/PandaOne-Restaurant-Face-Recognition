@@ -1,0 +1,126 @@
+{% extends 'face_detection/base.html' %}
+{% load static %}
+
+{% block title %}Face Recognition{% endblock %}
+
+{% block __base_main %}
+<div class="d-flex justify-content-center">
+  <video autoplay></video>
+</div>
+<div class="d-flex justify-content-center">
+  <button id="btnStart" class="btn btn-success my-2 mr-3">Start</button>
+  <button id="btnStop" class="btn btn-danger my-2">Stop</button>
+</div>
+<div class="container pt-5">
+  <h5>Face recognition results</h5>
+  <table id="recognitionResults" class="table">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col">Sex</th>
+        <th scope="col">First visit</th>
+        <th scope="col">Spent</th>
+      </tr>
+    </thead>
+    <tbody id="recognitionResults-body">
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extrascript %}
+<script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+<script>
+  const resultsBody = document.querySelector('#recognitionResults-body');
+
+  function insertCustomerData(customer) {
+      let newRow = resultsBody.insertRow(-1);
+
+      // console.log("Entries: " + Object.entries(customer));
+      for (const [k, v] of Object.entries(customer)) {
+        // console.log(k + " " + v);
+          newRow.insertCell(-1).appendChild(document.createTextNode(v));
+      }
+  }
+
+  function httpPost(url, im) {
+      return new Promise(function(resolve, reject) {
+          let xhr = new XMLHttpRequest();
+          xhr.open('POST', url, true);
+
+          xhr.onload = function() {
+              if (this.status === 200) {
+                  console.log(this.response);
+
+                  let resp = JSON.parse(this.response);
+                  console.log("Success: " + resp["success"]);
+
+                  resp["customers"].forEach(customer => insertCustomerData(customer));
+
+                  resolve(this.response);
+              } else {
+                  reject(new Error(this.statusText));
+              }
+          };
+
+          xhr.onerror = function() {
+              reject(new Error("Network error"));
+          };
+
+          xhr.send(im);
+      })
+  }
+
+  /*function takePhoto(video) {
+      let canvas = document.querySelector('canvas');
+      canvas.width = video.videoWidth || video.clientWidth;
+      canvas.height = video.videoHeight || video.clientHeight;
+
+      let context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      return canvas.toDataURL('image/png');
+  }*/
+
+  function sendLatestCapture(url) {
+      let videoTracks = stream.getVideoTracks();
+      let imageCapture = new ImageCapture(videoTracks[videoTracks.length-1]);
+
+      imageCapture.takePhoto().then(function(blob) {
+          console.log(blob);
+          let fd = new FormData();
+          fd.append("image", blob);
+          httpPost(url, fd);
+          // let photo = URL.createObjectURL(blob);
+      });
+  }
+
+  navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false
+  }).then(async function(stream) {
+      let video = document.querySelector('video');
+      let recorder = RecordRTC(stream, {
+          type: 'video'
+      });
+      recorder.startRecording();
+
+      document.querySelector('button#btnStop').onclick = function () {
+          video.pause();
+          // Clean "canvas"
+          //video.srcObject = null;
+          //recorder.stopRecording();
+          stream.getTracks()[0].stop();
+          console.log("Stop video recording");
+      };
+
+      const sleep = m => new Promise(r => setTimeout(r, m));
+      video.srcObject = stream;
+      await sleep(3000);
+
+  });
+
+</script>
+{% endblock %}
