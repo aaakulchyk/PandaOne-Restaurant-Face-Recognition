@@ -149,8 +149,9 @@ def detect_async(request, *args, **kwargs):
 
         data.update({"success": True,
                      "num_faces": detections.shape[0],
+                     "has_new": has_new,
                      "customers": customers,
-                     "has_new": has_new})
+                     })
         # print(f"DATA: {data}")
 
     # return a JSON response

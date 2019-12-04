@@ -58,7 +58,13 @@
           // console.log("Entries: " + Object.entries(customer));
           for (const [k, v] of Object.entries(customer)) {
               // console.log(k + " " + v);
-              newRow.insertCell(-1).appendChild(document.createTextNode(v));
+              if (k === 'first_visit') {
+                  let d = new Date(v);
+                  let dFormatted = `${d.getDay()}.${d.getMonth()}.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
+                  newRow.insertCell(-1).appendChild(document.createTextNode(dFormatted));
+              } else {
+                  newRow.insertCell(-1).appendChild(document.createTextNode(v));
+              }
           }
           _cacheCustomerData(customer);
       }
