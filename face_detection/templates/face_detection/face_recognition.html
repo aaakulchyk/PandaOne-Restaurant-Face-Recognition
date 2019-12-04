@@ -8,8 +8,8 @@
   <video autoplay></video>
 </div>
 <div class="d-flex justify-content-center">
-  <button id="btnStart" class="btn btn-success my-2 mr-3">Start</button>
-  <button id="btnStop" class="btn btn-danger my-2">Stop</button>
+  <button id="btnRecord-continue" class="btn btn-success my-2 mr-3">Continue</button>
+  <button id="btnRecord-stop" class="btn btn-danger my-2">Stop</button>
 </div>
 <div class="container pt-5">
   <h5>Face recognition results</h5>
@@ -105,32 +105,36 @@
       });
   }
 
-  navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: false
-  }).then(async function(stream) {
-      let video = document.querySelector('video');
-      let recorder = RecordRTC(stream, {
-          type: 'video'
+  function mount(event) {
+      navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+      }).then(async function(stream) {
+          let video = document.querySelector('video');
+          let recorder = RecordRTC(stream, {
+              type: 'video'
+          });
+          recorder.startRecording();
+
+          // Bind recording interruption
+          document.querySelector('button#btnRecord-stop').onclick = (e) => {
+              video.pause();
+              stream.getTracks()[0].stop();
+              recorder.stopRecording();
+              console.log("Stop video recording");
+          };
+
+          // Bind recording continuation
+          document.querySelector('button#btnRecord-continue').onclick = mount;
+
+          setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8000/detect/');
+          const sleep = m => new Promise(r => setTimeout(r, m));
+          video.srcObject = stream;
+          await sleep(3000);
       });
-      recorder.startRecording();
+  }
 
-      document.querySelector('button#btnStop').onclick = function () {
-          video.pause();
-          // Clean "canvas"
-          //video.srcObject = null;
-          //recorder.stopRecording();
-          stream.getTracks()[0].stop();
-          console.log("Stop video recording");
-      };
-
-      setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8000/detect/');
-
-      const sleep = m => new Promise(r => setTimeout(r, m));
-      video.srcObject = stream;
-      await sleep(3000);
-
-  });
+  document.addEventListener('DOMContentLoaded', mount);
 
 </script>
 {% endblock %}
