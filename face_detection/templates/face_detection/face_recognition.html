@@ -34,14 +34,22 @@
 
 <script>
   const resultsBody = document.querySelector('#recognitionResults-body');
+  let __customerCache = new Set();
 
-  function insertCustomerData(customer) {
+  function _cacheCustomerData(customer) {
+      __customerCache.add(customer["id"]);
+  }
+
+  function _insertCustomerData(customer) {
       let newRow = resultsBody.insertRow(-1);
 
-      // console.log("Entries: " + Object.entries(customer));
-      for (const [k, v] of Object.entries(customer)) {
-        // console.log(k + " " + v);
-          newRow.insertCell(-1).appendChild(document.createTextNode(v));
+      if (!__customerCache.has(customer["id"])) {
+          // console.log("Entries: " + Object.entries(customer));
+          for (const [k, v] of Object.entries(customer)) {
+              // console.log(k + " " + v);
+              newRow.insertCell(-1).appendChild(document.createTextNode(v));
+          }
+          _cacheCustomerData(customer);
       }
   }
 
@@ -57,7 +65,7 @@
                   let resp = JSON.parse(this.response);
                   console.log("Success: " + resp["success"]);
 
-                  resp["customers"].forEach(customer => insertCustomerData(customer));
+                  resp["customers"].forEach(customer => _insertCustomerData(customer));
 
                   resolve(this.response);
               } else {
@@ -84,7 +92,7 @@
       return canvas.toDataURL('image/png');
   }*/
 
-  function sendLatestCapture(url) {
+  function sendLatestCapture(stream, url) {
       let videoTracks = stream.getVideoTracks();
       let imageCapture = new ImageCapture(videoTracks[videoTracks.length-1]);
 
@@ -115,6 +123,8 @@
           stream.getTracks()[0].stop();
           console.log("Stop video recording");
       };
+
+      setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8000/detect/');
 
       const sleep = m => new Promise(r => setTimeout(r, m));
       video.srcObject = stream;
