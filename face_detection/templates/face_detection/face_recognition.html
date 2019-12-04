@@ -48,6 +48,10 @@
   const resultsBody = document.querySelector('#recognitionResults-body');
   let __customerCache = new Set();
 
+  function _formatDate(d) {
+      return `${d.getDay()}.${d.getMonth()}.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
+  }
+
   function _cacheCustomerData(customer) {
       __customerCache.add(customer["id"]);
   }
@@ -60,17 +64,14 @@
           for (const [k, v] of Object.entries(customer)) {
               // console.log(k + " " + v);
               if (k === 'first_visit' || k === 'last_visit') {
-                  let d = new Date(v);
-                  let dFormatted = `${d.getDay()}.${d.getMonth()}.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
-                  newRow.insertCell(-1).appendChild(document.createTextNode(dFormatted));
+                  newRow.insertCell(-1).appendChild(document.createTextNode(_formatDate(new Date(v))));
               } else {
                   newRow.insertCell(-1).appendChild(document.createTextNode(v));
               }
           }
           _cacheCustomerData(customer);
       } else {
-          let d = new Date(customer["last_visit"]);
-          let dFormatted = `${d.getDay()}.${d.getMonth()}.${d.getFullYear()}, ${d.getHours()}:${d.getMinutes()}`;
+          let dFormatted = _formatDate(new Date(customer["last_visit"]));
           for (const row of resultsBody.querySelectorAll('tr')) {
               try {
                   console.log(row.childNodes[4].textContent);
