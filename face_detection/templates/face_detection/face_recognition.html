@@ -57,21 +57,30 @@
               ${_prependZero(d.getHours())}:${_prependZero(d.getMinutes())}`;
   }
 
+  function _wrapLink(el, url) {
+      let a = document.createElement("a", {is: url});
+      a.href = url;
+      a.appendChild(el);
+      return a;
+  }
+
   function _cacheCustomerData(customer) {
       __customerCache.add(customer["id"]);
   }
 
   function _insertCustomerData(customer) {
-      let newRow = resultsBody.insertRow(-1);
-
       if (!__customerCache.has(customer["id"])) {
+          let newRow = resultsBody.insertRow(-1);
           // console.log("Entries: " + Object.entries(customer));
+          let customerURL = "/customer/" + customer["id"] + "/";
           for (const [k, v] of Object.entries(customer)) {
               // console.log(k + " " + v);
               if (k === 'first_visit' || k === 'last_visit') {
-                  newRow.insertCell(-1).appendChild(document.createTextNode(_formatDate(new Date(v))));
+                  newRow.insertCell(-1).appendChild(_wrapLink(
+                      document.createTextNode(_formatDate(new Date(v))), customerURL));
               } else {
-                  newRow.insertCell(-1).appendChild(document.createTextNode(v));
+                  newRow.insertCell(-1).appendChild(_wrapLink(
+                      document.createTextNode(v), customerURL));
               }
           }
           _cacheCustomerData(customer);
