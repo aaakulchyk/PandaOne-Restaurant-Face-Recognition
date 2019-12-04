@@ -10,6 +10,7 @@ from collections import Iterable
 
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
@@ -290,12 +291,15 @@ def _query_recognized_customer(name, fields='all'):
         raise ValueError(f"Argument `fields` must be equal 'all' or be iterable")
 
     customer = _models.Customer.objects.get(pk=int(name))
+    customer.last_visit = timezone.now()
+    customer.save()
     if fields == 'all':
         return {
             'id': customer.pk,
             'name': customer.name,
             'sex': customer.sex,
             'first_visit': customer.first_visit,
+            'last_visit': customer.last_visit,
             'spent': customer.spent,
         }
 
@@ -312,6 +316,7 @@ def _query_register_customers(names, fields='all'):
                            'name': new_customer.name,
                            'sex': new_customer.sex,
                            'first_visit': new_customer.first_visit,
+                           'last_visit': new_customer.last_visit,
                            'spent': new_customer.spent,
                            })
         else:
