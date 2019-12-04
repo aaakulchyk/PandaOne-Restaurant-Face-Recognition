@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 
 from .mixins import MixinRegularCustomerInfo
@@ -21,6 +23,18 @@ class BaseCustomer(models.Model):
 class Customer(BaseCustomer):
     class Meta(BaseCustomer.Meta):
         db_table = 'customer'
+
+    @classmethod
+    def create(cls, **kwargs):
+        new_customer = cls(**kwargs)
+        new_customer.save()
+        try:
+            os.mkdir(os.path.join('face_detection', 'dataset', str(new_customer.pk)))
+        except OSError as e:
+            print(e)
+        return new_customer
+
+    # Magic methods
 
     def __str__(self):
         return f'{self.name}, ID {self.pk}'
