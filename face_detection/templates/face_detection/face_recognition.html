@@ -3,17 +3,7 @@
 
 {% block title %}Face Recognition{% endblock %}
 
-{% block extrastyle %}
-<style>
-  a.disable-style {
-    color: black !important;
-    text-decoration: none;
-  }
-</style>
-{% endblock %}
-
-{% block __base_main %}
-<main class="container p-5 bg-white">
+{% block main %}
 <div class="d-flex justify-content-center">
   <video autoplay></video>
 </div>
@@ -38,13 +28,13 @@
     </tbody>
   </table>
 </div>
-</main>
 {% endblock %}
 
 {% block extrascript %}
 <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 
 <script>
+  const DETECT_URL = 'http://localhost:8002/detect/';
   const resultsBody = document.querySelector('#recognitionResults-body');
   let __customerCache = new Set();
 
@@ -76,11 +66,11 @@
           for (const [k, v] of Object.entries(customer)) {
               // console.log(k + " " + v);
               if (k === 'first_visit' || k === 'last_visit') {
-                  newRow.insertCell(-1).appendChild(_wrapLink(
-                      document.createTextNode(_formatDate(new Date(v))), customerURL));
+                  newRow.insertCell(-1).appendChild(
+                      _wrapLink(document.createTextNode(_formatDate(new Date(v))), customerURL));
               } else {
-                  newRow.insertCell(-1).appendChild(_wrapLink(
-                      document.createTextNode(v), customerURL));
+                  newRow.insertCell(-1).appendChild(
+                      _wrapLink(document.createTextNode(v), customerURL));
               }
           }
           _cacheCustomerData(customer);
@@ -88,11 +78,11 @@
           let dFormatted = _formatDate(new Date(customer["last_visit"]));
           for (const row of resultsBody.querySelectorAll('tr')) {
               try {
-                  console.log(row.childNodes[4].textContent);
+                  // console.log(row.childNodes[4].textContent);
                   let cur_id = row.firstChild.textContent;
-                  console.log("Customer ID: " + customer["id"] + " cur_id: " + cur_id);
+                  // console.log("Customer ID: " + customer["id"] + " cur_id: " + cur_id);
                   if (customer["id"] === parseInt(cur_id)) {
-                      row.childNodes[4].textContent = dFormatted;
+                      row.childNodes[4].firstChild.textContent = dFormatted;
                   }
               } catch (e) {
                   console.log(e);
@@ -172,7 +162,7 @@
           // Bind recording continuation
           document.querySelector('button#btnRecord-continue').onclick = mount;
 
-          let sendCaptures = setInterval(sendLatestCapture, 3000, stream, 'http://localhost:8001/detect/');
+          let sendCaptures = setInterval(sendLatestCapture, 3000, stream, DETECT_URL);
           const sleep = m => new Promise(r => setTimeout(r, m));
           video.srcObject = stream;
           await sleep(1000);
