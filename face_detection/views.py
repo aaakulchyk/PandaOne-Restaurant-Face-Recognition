@@ -39,7 +39,7 @@ def face_recognition(request, *args, **kwargs):
 
 
 def json_customer(request, pk, *args, **kwargs):
-    return JsonResponse({'customer': _query_recognized_customer(pk-1)})
+    return JsonResponse({'customer': _query_recognized_customer(pk)})
 
 
 def test(request, *args, **kwargs):
@@ -281,7 +281,7 @@ def _query_recognized_customer(name, fields='all'):
     if fields != 'all' and not isinstance(fields, Iterable):
         raise ValueError(f"Argument `fields` must be equal 'all' or be iterable")
 
-    customer = _models.Customer.objects.get(pk=int(name)+1)
+    customer = _models.Customer.objects.get(pk=int(name))
     if fields == 'all':
         return {
             'id': customer.pk,
