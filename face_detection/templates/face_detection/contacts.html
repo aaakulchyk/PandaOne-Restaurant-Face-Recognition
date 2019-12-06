@@ -1,0 +1,40 @@
+{% extends 'face_detection/base.html' %}
+{% load static %}
+
+
+{% block main %}
+<h2>Our team</h2>
+<div class="row pt-3">
+  <div class="col-md-4">
+    <img class="img-fluid" width="300" src="{% static 'face_detection/images/team/andrei.jpg' %}" alt="andrei">
+  </div>
+  <div class="col-md-8">
+    <h3>Andrei Kulchyk</h3>
+    <p>Back-end Developer</p>
+    <p>Machine Learning Engineer</p>
+    <p>Occasionally Front-end Developer, yet hate JS</p>
+  </div>
+</div>
+
+<div class="row pt-3">
+  <div class="col-md-4">
+    <img class="img-fluid" width="300" src="{% static 'face_detection/images/team/ilya.jpg' %}" alt="andrei">
+  </div>
+  <div class="col-md-8">
+    <h3>Ilya Mandryk</h3>
+    <p>Solution Architect</p>
+    <p>Coffee fan</p>
+  </div>
+</div>
+
+<div class="row pt-3">
+  <div class="col-md-4">
+    <img class="img-fluid" width="300" src="{% static 'face_detection/images/team/ilya.jpg' %}" alt="andrei">
+  </div>
+  <div class="col-md-8">
+    <h3>Ilya Mandryk</h3>
+    <p>Solution Architect</p>
+    <p>Coffee fan</p>
+  </div>
+</div>
+{% endblock %}

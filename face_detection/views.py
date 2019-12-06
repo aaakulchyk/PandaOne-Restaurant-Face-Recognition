@@ -362,3 +362,7 @@ def _query_register_customers(names, fields='all'):
         else:
             result.append(_query_recognized_customer(name))
     return result, has_new
+
+
+def contacts(request, *args, **kwargs):
+    return render(request, 'face_detection/contacts.html')

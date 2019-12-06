@@ -27,7 +27,7 @@
         <th scope="col">Spent</th>
       </tr>
     </thead>
-    <tbody id="recognitionResults-body">
+    <tbody>
     </tbody>
   </table>
 </div>
@@ -40,7 +40,9 @@
   const DETECT_URL = 'http://localhost:8000/detect/';
   const TEST_URL = 'http://localhost:8000/test/';
   const ADMIN_URL = 'http://localhost:8000/admin/face_detection/customer/add/';
-  const resultsBody = document.querySelector('#recognitionResults-body');
+  const DEBUG = true;
+  const imageCaptureSendInterval = 5000;
+  let resultsBody = document.querySelector('tbody');
   let __customerCache = new Set();
   let latterImage = null;
   let clickableAreas = [];
@@ -149,6 +151,8 @@
           xhr.onload = function() {
               if (this.status === 200) {
                   console.log(this.response);
+                  resultsBody.replaceWith(document.createElement('tbody'));
+                  resultsBody = document.querySelector('tbody');
 
                   let resp = JSON.parse(this.response);
 
@@ -163,7 +167,7 @@
                       resp["customers"].forEach(customer => _insertCustomerData(customer));
                   }
 
-                  console.log(clickableAreas);
+                  // console.log(clickableAreas);
 
                   document.querySelector('canvas').onclick = function(e) {
                       let rect = this.getBoundingClientRect();
@@ -238,7 +242,9 @@
           // Bind recording continuation
           document.querySelector('button#btnRecord-continue').onclick = mount;
 
-          let sendCaptures = setInterval(sendLatestCapture, 3000, stream, TEST_URL);
+          let xhrAddress = DEBUG ? TEST_URL : DETECT_URL;
+
+          let sendCaptures = setInterval(sendLatestCapture, imageCaptureSendInterval, stream, xhrAddress);
           const sleep = m => new Promise(r => setTimeout(r, m));
           video.srcObject = stream;
           await sleep(1000);
