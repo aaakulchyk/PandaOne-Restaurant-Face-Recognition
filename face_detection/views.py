@@ -4,20 +4,28 @@ import json
 import numpy as np
 import os
 import pickle
+import subprocess
 import urllib
 
 from collections import Iterable
 
-from django.http import JsonResponse
+from django.core.files.base import ContentFile
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.utils import timezone
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
 from . import models as _models
+from .recognize import put_roi
+# from .facenet.detection import extract_face
+# from .facenet.extract_embeddings import get_embedding, load_dataset, load_faces
 
 
 FACE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_frontalface_default.xml".format(
+    base_path=os.path.abspath(os.path.dirname(__file__)))
+
+FACENET_PATH = "{base_path}/facenet/model/facenet_keras.h5".format(
     base_path=os.path.abspath(os.path.dirname(__file__)))
 
 RECOGNITION_PARAMS = {
@@ -29,6 +37,8 @@ RECOGNITION_PARAMS = {
     }
 
 RECOGNITION_CACHE = set()
+
+FLAG_NEW_CUSTOMER = '0_unknown'
 
 
 def index(request, *args, **kwargs):
@@ -43,8 +53,12 @@ def json_customer(request, pk, *args, **kwargs):
     return JsonResponse({'customer': _query_recognized_customer(pk)})
 
 
+@csrf_exempt
 def test(request, *args, **kwargs):
-    return render(request, 'face_detection/test.html')
+    if request.method == 'POST':
+        response = detect_async(request, args, kwargs)
+        response["customers"].append({'name': FLAG_NEW_CUSTOMER, 'roi': ["100", "100", "200", "200"]})
+        return JsonResponse(response)
 
 
 class CustomerListView(generic.ListView):
@@ -55,6 +69,19 @@ class CustomerDetailView(generic.DetailView):
     model = _models.Customer
     template_name = 'face_detection/customer_detail.html'
     context_object_name = 'customer'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        obj = context.get('object', None)
+
+        if obj is not None:
+            _dir = os.path.join('face_detection', 'dataset', str(obj.pk))
+            im = None
+            if os.path.exists(_dir):
+                obj.image = os.path.join(_dir, sorted(os.listdir(_dir))[0])
+
+        print(obj.image)
+        return context
 
 
 class RegularCustomerListView(generic.ListView):
@@ -141,12 +168,13 @@ def detect_async(request, *args, **kwargs):
             # load the image and convert
             image = _grab_image(url=url)
 
-        detections, names = _recognize(image, **RECOGNITION_PARAMS)
+        detections, names_coords = put_roi(image, RECOGNITION_PARAMS)
         # print(f"Detections: {detections}")
-        customers, has_new = _query_recognized_customers(names, add_new=True)
+        customers, has_new = _query_recognized_customers(names_coords, add_new=True)
+
 
         # Cache customers that were recognized at the picture
-        _cache_recognition_results(names)
+        _cache_recognition_results(names_coords.keys())
 
         data.update({"success": True,
                      "num_faces": detections.shape[0],
@@ -156,7 +184,8 @@ def detect_async(request, *args, **kwargs):
         # print(f"DATA: {data}")
 
     # return a JSON response
-    return JsonResponse(data)
+    # return JsonResponse(data)
+    return data
 
 
 def _cache_recognition_results(names):
@@ -278,22 +307,31 @@ def _recognize(image, **kwargs):
     return detections[0, 0, detections[0, 0, :, 2] > kwargs['confidence']], names
 
 
-def _query_recognized_customers(names, add_new=True, fields='all'):
+def _query_recognized_customers(names_coords, add_new=True, fields='all'):
     # Registry of new customers required?
-    if add_new:
-        return _query_register_customers(names, fields=fields)
-    else:
-        return [_query_recognized_customer(name) for name in names], False
+    # if add_new:
+    #     return _query_register_customers(names, fields=fields)
+    # else:
+    #     return [_query_recognized_customer(name) for name in names], False
+    has_new = False
+    customers = []
+    for name in names_coords.keys():
+        if name == FLAG_NEW_CUSTOMER:
+            has_new = True
+        customer = _query_recognized_customer(name)
+        customer['roi'] = [str(i) for i in names_coords[name]]
+        customers.append(customer)
+    return customers, has_new
 
 
 def _query_recognized_customer(name, fields='all'):
     if fields != 'all' and not isinstance(fields, Iterable):
         raise ValueError(f"Argument `fields` must be equal 'all' or be iterable")
 
-    customer = _models.Customer.objects.get(pk=int(name))
-    customer.last_visit = timezone.now()
-    customer.save()
-    if fields == 'all':
+    if name != FLAG_NEW_CUSTOMER:
+        customer = _models.Customer.objects.get(pk=int(name))
+        customer.last_visit = timezone.now()
+        customer.save()
         return {
             'id': customer.pk,
             'name': customer.name,
@@ -302,14 +340,16 @@ def _query_recognized_customer(name, fields='all'):
             'last_visit': customer.last_visit,
             'spent': customer.spent,
         }
+    else:
+        return {'name': name}
 
 
 def _query_register_customers(names, fields='all'):
     result = list()
     has_new = False
     for name in names:
-        # Unrecognized customer is marked with '0' label
-        if name == '0':
+        # Unrecognized customer is marked with `FLAG_NEW_CUSTOMER` label
+        if name == FLAG_NEW_CUSTOMER:
             has_new = True
             new_customer = _models.Customer.create()
             result.append({'id': new_customer.pk,
