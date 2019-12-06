@@ -1,16 +1,13 @@
 import cv2 as cv
 import imutils
-import json
 import numpy as np
 import os
 import pickle
-import subprocess
 import urllib
 
 from collections import Iterable
 
-from django.core.files.base import ContentFile
-from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views import generic
@@ -33,7 +30,7 @@ RECOGNITION_PARAMS = {
         "detector": "face_detection/face_detection_model",
         "embedding_model": "face_detection/openface_nn4.small2.v1.t7",
         "le": "face_detection/output/recognizer.pickle",
-        "confidence": 0.8
+        "confidence": 0.99
     }
 
 RECOGNITION_CACHE = set()
@@ -73,6 +70,7 @@ class CustomerDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         obj = context.get('object', None)
+        context['species'] = obj.favorite_species.all().values()
 
         if obj is not None:
             _dir = os.path.join('face_detection', 'dataset', str(obj.pk))
@@ -80,7 +78,9 @@ class CustomerDetailView(generic.DetailView):
             if os.path.exists(_dir):
                 obj.image = os.path.join(_dir, sorted(os.listdir(_dir))[0])
 
-        print(obj.image)
+        # print(context['species'])
+        # print(context['species'].iterator())
+        # print(obj.image)
         return context
 
 
