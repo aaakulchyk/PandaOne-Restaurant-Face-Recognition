@@ -1,13 +1,10 @@
 from detection import extract_face
 
 import argparse
-import mtcnn
 import numpy as np
 import os
-import pickle
 import tensorflow as tf
 
-from PIL import Image
 from tensorflow import keras
 from keras import models
 

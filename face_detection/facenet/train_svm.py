@@ -1,5 +1,3 @@
-from detection import extract_face
-
 import argparse
 import numpy as np
 import pickle

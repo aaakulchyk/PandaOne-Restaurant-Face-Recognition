@@ -1,0 +1,43 @@
+{% extends 'face_detection/base.html' %}
+
+{% block main %}
+<p></p>
+{% endblock %}
+
+{% block extrascript %}
+<script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+<script>
+  function httpGet(url) {
+      return new Promise(function(resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+
+        xhr.onload = function() {
+          if (this.status === 200) {
+            resolve(this.response);
+          } else {
+            let error = new Error(this.statusText);
+            error.code = this.status;
+            reject(error);
+          }
+        };
+
+        xhr.onerror = function() {
+          reject(new Error("Network error"));
+        };
+
+        xhr.send();
+      });
+  }
+
+  // use httpGet
+  httpGet("http://localhost:8000/json/customer/1/").then(
+      response => {
+          let p = document.querySelector('p');
+          p.innerText = JSON.parse(response).customer.name;
+      },
+      error => alert(`Rejected: ${error}`)
+  );
+</script>
+{% endblock %}

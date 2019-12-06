@@ -44,8 +44,7 @@ class Customer(BaseCustomer):
         # Ensure to return whatever overriden delete should return
         return super().delete(using=using, keep_parents=keep_parents)
 
-    # Magic methods
-
+    # <Magic Methods>
     def __str__(self):
         return f'{self.name}, ID {self.pk}'
 

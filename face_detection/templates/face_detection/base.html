@@ -6,6 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>{% block title %}BaseTitle | PandaOne{% endblock %}</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<style>
+  a.disable-style {
+    color: black !important;
+    text-decoration: none;
+  }
+</style>
 {% block extrahead %}{% endblock %}
 {% block extrastyle %}{% endblock %}
 </head>
@@ -31,7 +37,7 @@
 
 
 {% block __base_main %}
-<main class="container">
+<main class="container p-5 bg-white">
   {% block main %}{% endblock %}
 </main>
 {% endblock %} <!-- block __base_main -->
