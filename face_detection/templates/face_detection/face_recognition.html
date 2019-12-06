@@ -41,7 +41,7 @@
   const TEST_URL = 'http://localhost:8000/test/';
   const ADMIN_URL = 'http://localhost:8000/admin/face_detection/customer/add/';
   const DEBUG = true;
-  const imageCaptureSendInterval = 5000;
+  const imageCaptureSendInterval = 3000;
   let resultsBody = document.querySelector('tbody');
   let __customerCache = new Set();
   let latterImage = null;
@@ -69,11 +69,11 @@
 
   function _insertCustomerData(customer) {
       if (customer.name === '0_unknown') {
-          _drawROI(customer);
+          _drawROI(customer, 'red');
           return;
       }
 
-      _drawROI(customer);
+      _drawROI(customer, 'green');
       if (!__customerCache.has(customer["id"])) {
           let newRow = resultsBody.insertRow(-1);
           // console.log("Entries: " + Object.entries(customer));
@@ -90,7 +90,7 @@
                       _wrapLink(document.createTextNode(v), customerURL));
               }
           }
-          _cacheCustomerData(customer);
+          // _cacheCustomerData(customer);
       } else {
           let dFormatted = _formatDate(new Date(customer["last_visit"]));
           for (const row of resultsBody.querySelectorAll('tr')) {
@@ -108,7 +108,7 @@
       }
   }
 
-  function _drawROI(customer) {
+  function _drawROI(customer, color) {
       let c = document.querySelector('canvas');
       let context = c.getContext('2d');
 
@@ -127,7 +127,7 @@
 
       context.beginPath();
       context.rect(startX, startY, w, h);
-      context.strokeStyle = 'red';
+      context.strokeStyle = color;
       context.lineWidth = 1;
       context.stroke();
   }

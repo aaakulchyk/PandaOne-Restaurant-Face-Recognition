@@ -20,12 +20,14 @@
     <p><strong>First visit:</strong> {{ customer.first_visit }}</p>
     <p><strong>Last visit:</strong> {{ customer.last_visit }}</p>
     <p><strong>Spent totally:</strong> {{ customer.spent }}</p>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col">
-
+    <ul class="list-group">
+      <p><strong>Favorite Species:</strong></p>
+      {% for s in species %}
+      <li class="list-group-item p-2">{{ s.name }}</li>
+      {% empty %}
+      <li class="list-group-item p-2">This customer does not have preferences yet.</li>
+      {% endfor %}
+    </ul>
   </div>
 </div>
 {% endblock %} <!-- block main -->
