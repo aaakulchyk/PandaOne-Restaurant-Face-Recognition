@@ -6,6 +6,17 @@ from django.db import models
 from .mixins import MixinRegularCustomerInfo
 
 
+class Species(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'<Species {self.name!r}>'
+
+
 class BaseCustomer(models.Model):
     class Meta:
         abstract = True
@@ -25,6 +36,8 @@ class BaseCustomer(models.Model):
 class Customer(BaseCustomer):
     class Meta(BaseCustomer.Meta):
         db_table = 'customer'
+
+    favorite_species = models.ManyToManyField(Species)
 
     @classmethod
     def create(cls, **kwargs):
